@@ -2,7 +2,7 @@ import re
 import html
 import requests
 import feedparser
-from flask import Flask, jsonify, render_template_string
+from flask import Flask, jsonify, render_template
 from bs4 import BeautifulSoup
 
 app = Flask(__name__)
@@ -29,8 +29,8 @@ def extract_text(raw_html):
 
 @app.route("/")
 def index():
-    # Render static UI inline using Flask
-    return render_template_string(HTML_TEMPLATE)
+    # Return raw static HTML to prevent Jinja2 template processing errors entirely
+    return HTML_TEMPLATE
 
 @app.route("/api/releases")
 def get_releases():
@@ -630,7 +630,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                 // Escape double quotes by doubling them
                 stringVal = stringVal.replace(/"/g, '""');
                 // Wrap in double quotes if there are commas, double quotes, or newlines
-                if (/[",\\n\\r]/.test(stringVal)) {
+                if (/[",\n\r]/.test(stringVal)) {
                     stringVal = `"${stringVal}"`;
                 }
                 return stringVal;
@@ -646,7 +646,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             const csvContent = [
                 headers.map(escapeCsvValue).join(','),
                 ...rows.map(row => row.map(escapeCsvValue).join(','))
-            ].join('\\n');
+            ].join('\n');
 
             // Download trigger
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -707,27 +707,27 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                 } catch(e) {}
 
                 // Escape text content for javascript passing safely
-                const safePlainText = rel.plain_text.replace(/`/g, '\\\\`').replace(/\\$/g, '\\\\\\\\$');
+                const safePlainText = rel.plain_text.replace(/`/g, '\\`').replace(/\$/g, '\\$');
 
                 return `
                     <article class="release-card">
                         <div class="release-header">
                             <div class="release-meta">
-                                <h2 class="release-title">\${rel.title}</h2>
-                                <span class="release-date">\${formattedDate}</span>
+                                <h2 class="release-title">` + rel.title + `</h2>
+                                <span class="release-date">` + formattedDate + `</span>
                             </div>
                         </div>
                         <div class="release-content">
-                            \${rel.content}
+                            ` + rel.content + `
                         </div>
                         <div class="release-actions">
-                            <button class="btn btn-twitter" onclick="openTweetModal(\${index})">
+                            <button class="btn btn-twitter" onclick="openTweetModal(` + index + `)">
                                 Tweet Update
                             </button>
-                            <button class="btn btn-secondary" onclick="copyToClipboard(\`\${safePlainText}\`)" style="font-size: 0.9rem; padding: 0.5rem 1rem;">
+                            <button class="btn btn-secondary" onclick="copyToClipboard(\`` + safePlainText + `\`)" style="font-size: 0.9rem; padding: 0.5rem 1rem;">
                                 Copy Info
                             </button>
-                            <a href="\${rel.link}" target="_blank" class="btn btn-secondary" style="font-size: 0.9rem; padding: 0.5rem 1rem; text-decoration: none;">
+                            <a href="` + rel.link + `" target="_blank" class="btn btn-secondary" style="font-size: 0.9rem; padding: 0.5rem 1rem; text-decoration: none;">
                                 View Source
                             </a>
                         </div>
@@ -742,16 +742,16 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             if (!rel) return;
 
             // Generate clean draft
-            let draft = `BigQuery Update: \${rel.title}\\n\\n`;
+            let draft = "BigQuery Update: " + rel.title + "\\n\\n";
             
             // Try to append part of the text
             const maxSnippetLen = 180;
             let snippet = rel.plain_text;
             if (snippet.length > maxSnippetLen) {
-                snippet = snippet.substring(0, maxSnippetLen) + '...';
+                snippet = snippet.substring(0, maxSnippetLen) + "...";
             }
             
-            draft += snippet + `\\n\\nMore info: \${rel.link}`;
+            draft += snippet + "\\n\\nMore info: " + rel.link;
             
             tweetText.value = draft;
             updateCharCount();
@@ -764,7 +764,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 
         function updateCharCount() {
             const count = tweetText.value.length;
-            charCounter.textContent = `\${count} / 280`;
+            charCounter.textContent = count + " / 280";
             if (count > 280) {
                 charCounter.classList.add('limit-exceeded');
                 sendTweet.disabled = true;
@@ -782,7 +782,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 
         sendTweet.addEventListener('click', () => {
             const text = encodeURIComponent(tweetText.value);
-            window.open(`https://twitter.com/intent/tweet?text=\${text}`, '_blank');
+            window.open("https://twitter.com/intent/tweet?text=" + text, "_blank");
             closeTweetModalFunc();
         });
 
