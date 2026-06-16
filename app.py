@@ -89,6 +89,21 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             --twitter-color: #1d9bf0;
             --twitter-hover: #1a8cd8;
             --font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            
+            /* Theme overrides */
+            --header-border: var(--border-color);
+        }
+
+        /* Light Theme Overrides */
+        body.light-theme {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --accent-color: #0284c7;
+            --accent-hover: #0369a1;
+            --header-border: #cbd5e1;
         }
 
         * {
@@ -107,6 +122,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             display: flex;
             flex-direction: column;
             align-items: center;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         header {
@@ -116,8 +132,10 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             justify-content: space-between;
             align-items: center;
             margin-bottom: 2rem;
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--header-border);
             padding-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
         }
 
         .logo-container {
@@ -136,21 +154,31 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             justify-content: center;
             font-weight: 700;
             font-size: 1.25rem;
-            color: var(--bg-color);
+            color: #ffffff;
             box-shadow: 0 4px 12px rgba(56, 189, 248, 0.2);
+        }
+
+        body.light-theme .logo-icon {
+            color: #ffffff;
         }
 
         h1 {
             font-size: 1.5rem;
             font-weight: 700;
-            background: linear-gradient(to right, #ffffff, var(--accent-color));
+            background: linear-gradient(to right, var(--text-primary), var(--accent-color));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
         .btn {
             background-color: var(--accent-color);
-            color: #0f172a;
+            color: #ffffff;
             border: none;
             padding: 0.6rem 1.2rem;
             border-radius: 8px;
@@ -161,6 +189,11 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             gap: 0.5rem;
             font-family: var(--font-family);
             transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        body:not(.light-theme) .btn:not(.btn-secondary):not(.btn-twitter) {
+            color: #0f172a;
         }
 
         .btn:hover {
@@ -179,7 +212,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         }
 
         .btn-secondary:hover {
-            background-color: rgba(255, 255, 255, 0.05);
+            background-color: rgba(148, 163, 184, 0.1);
             border-color: var(--text-secondary);
         }
 
@@ -194,12 +227,67 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             background-color: var(--twitter-hover);
         }
 
+        /* Toggle switch styling */
+        .theme-toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--border-color);
+            transition: .3s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: var(--text-primary);
+            transition: .3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--accent-color);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(20px);
+        }
+
         /* Spinner Animation */
         .spinner {
             width: 18px;
             height: 18px;
-            border: 2px solid rgba(15, 23, 42, 0.3);
-            border-top: 2px solid #0f172a;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top: 2px solid currentColor;
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
             display: none;
@@ -236,13 +324,19 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             text-align: center;
         }
 
+        body.light-theme .error-message {
+            background-color: #fef2f2;
+            color: #991b1b;
+            border-color: #fca5a5;
+        }
+
         .release-card {
             background-color: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: 12px;
             padding: 1.5rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            transition: border-color 0.2s ease, transform 0.2s ease;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            transition: border-color 0.2s ease, transform 0.2s ease, background-color 0.3s ease;
         }
 
         .release-card:hover {
@@ -267,7 +361,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         .release-title {
             font-size: 1.2rem;
             font-weight: 600;
-            color: #ffffff;
+            color: var(--text-primary);
         }
 
         .release-date {
@@ -277,7 +371,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 
         .release-content {
             font-size: 0.95rem;
-            color: #cbd5e1;
+            color: var(--text-primary);
+            opacity: 0.9;
             margin-bottom: 1.25rem;
         }
 
@@ -304,8 +399,30 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             display: flex;
             gap: 0.75rem;
             align-items: center;
-            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            border-top: 1px solid var(--border-color);
             padding-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        /* Toast feedback */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background-color: var(--text-primary);
+            color: var(--bg-color);
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            z-index: 2000;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
         }
 
         /* Modal styling */
@@ -326,6 +443,10 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             transition: opacity 0.2s ease;
         }
 
+        body.light-theme .modal-overlay {
+            background-color: rgba(15, 23, 42, 0.4);
+        }
+
         .modal-overlay.active {
             opacity: 1;
             pointer-events: auto;
@@ -340,7 +461,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             padding: 1.5rem;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
             transform: scale(0.95);
-            transition: transform 0.2s ease;
+            transition: transform 0.2s ease, background-color 0.3s ease;
         }
 
         .modal-overlay.active .modal {
@@ -367,7 +488,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         .tweet-textarea {
             width: 100%;
             height: 120px;
-            background-color: rgba(15, 23, 42, 0.5);
+            background-color: var(--bg-color);
             border: 1px solid var(--border-color);
             border-radius: 8px;
             padding: 0.75rem;
@@ -376,6 +497,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             font-size: 0.95rem;
             resize: none;
             margin-bottom: 0.5rem;
+            transition: background-color 0.3s ease;
         }
 
         .tweet-textarea:focus {
@@ -408,10 +530,22 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             <div class="logo-icon">BQ</div>
             <h1>BigQuery Release Notes</h1>
         </div>
-        <button id="refresh-btn" class="btn">
-            <span class="spinner"></span>
-            <span class="btn-text">Refresh</span>
-        </button>
+        <div class="header-actions">
+            <div class="theme-toggle-container">
+                <span>Light Mode</span>
+                <label class="switch">
+                    <input type="checkbox" id="theme-checkbox">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <button id="export-btn" class="btn btn-secondary" style="font-size: 0.9rem; padding: 0.5rem 1rem;">
+                Export CSV
+            </button>
+            <button id="refresh-btn" class="btn">
+                <span class="spinner"></span>
+                <span class="btn-text">Refresh</span>
+            </button>
+        </div>
     </header>
 
     <main>
@@ -437,10 +571,16 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         </div>
     </div>
 
+    <!-- Toast message overlay -->
+    <div id="toast-message" class="toast">Copied to clipboard!</div>
+
     <script>
         const refreshBtn = document.getElementById('refresh-btn');
+        const exportBtn = document.getElementById('export-btn');
         const container = document.getElementById('releases-container');
         const errorBox = document.getElementById('error-box');
+        const themeCheckbox = document.getElementById('theme-checkbox');
+        const toastMessage = document.getElementById('toast-message');
         
         // Modal elements
         const tweetModal = document.getElementById('tweet-modal');
@@ -451,6 +591,78 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         const sendTweet = document.getElementById('send-tweet');
 
         let currentReleases = [];
+
+        // Theme preference management
+        if (localStorage.getItem('theme') === 'light') {
+            document.body.classList.add('light-theme');
+            themeCheckbox.checked = true;
+        }
+
+        themeCheckbox.addEventListener('change', () => {
+            if (themeCheckbox.checked) {
+                document.body.classList.add('light-theme');
+                localStorage.setItem('theme', 'light');
+            } else {
+                document.body.classList.remove('light-theme');
+                localStorage.setItem('theme', 'dark');
+            }
+        });
+
+        // Copy Clipboard utility
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                toastMessage.classList.add('show');
+                setTimeout(() => {
+                    toastMessage.classList.remove('show');
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy text: ', err);
+            });
+        }
+
+        // CSV Export utility
+        exportBtn.addEventListener('click', () => {
+            if (currentReleases.length === 0) return;
+            
+            // CSV columns header
+            const headers = ['Title', 'Date', 'URL', 'Plain Summary'];
+            
+            // Helper to escape values for CSV
+            const escapeCsvValue = (val) => {
+                if (val === null || val === undefined) return '';
+                let stringVal = String(val);
+                // Escape double quotes by doubling them
+                stringVal = stringVal.replace(/"/g, '""');
+                // Wrap in double quotes if there are commas, double quotes, or newlines
+                if (/[",\n\r]/.test(stringVal)) {
+                    stringVal = `"${stringVal}"`;
+                }
+                return stringVal;
+            };
+
+            const rows = currentReleases.map(rel => [
+                rel.title,
+                rel.updated,
+                rel.link,
+                rel.plain_text
+            ]);
+
+            const csvContent = [
+                headers.map(escapeCsvValue).join(','),
+                ...rows.map(row => row.map(escapeCsvValue).join(','))
+            ].join('\\n');
+
+            // Download trigger
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'bigquery_releases_export.csv');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
 
         async function fetchReleases() {
             refreshBtn.classList.add('loading');
@@ -498,6 +710,9 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                     });
                 } catch(e) {}
 
+                // Escape text content for javascript passing safely
+                const safePlainText = rel.plain_text.replace(/`/g, '\\`').replace(/\\$/g, '\\\\$');
+
                 return `
                     <article class="release-card">
                         <div class="release-header">
@@ -512,6 +727,9 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                         <div class="release-actions">
                             <button class="btn btn-twitter" onclick="openTweetModal(${index})">
                                 Tweet Update
+                            </button>
+                            <button class="btn btn-secondary" onclick="copyToClipboard(\`${safePlainText}\`)" style="font-size: 0.9rem; padding: 0.5rem 1rem;">
+                                Copy Info
                             </button>
                             <a href="${rel.link}" target="_blank" class="btn btn-secondary" style="font-size: 0.9rem; padding: 0.5rem 1rem; text-decoration: none;">
                                 View Source
