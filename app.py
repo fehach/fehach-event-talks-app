@@ -2,7 +2,7 @@ import re
 import html
 import requests
 import feedparser
-from flask import Flask, jsonify, render_template
+from flask import Flask, jsonify
 from bs4 import BeautifulSoup
 
 app = Flask(__name__)
@@ -29,8 +29,9 @@ def extract_text(raw_html):
 
 @app.route("/")
 def index():
-    # Return raw static HTML to prevent Jinja2 template processing errors entirely
-    return HTML_TEMPLATE
+    # Serve static HTML page directly without render_template / render_template_string
+    # to avoid any Jinja2 engine parsing errors caused by template literals in CSS or JavaScript
+    return HTML_CONTENT
 
 @app.route("/api/releases")
 def get_releases():
@@ -68,7 +69,7 @@ def get_releases():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
-HTML_TEMPLATE = """<!DOCTYPE html>
+HTML_CONTENT = """<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -89,9 +90,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             --twitter-color: #1d9bf0;
             --twitter-hover: #1a8cd8;
             --font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            
-            /* Theme overrides */
-            --header-border: var(--border-color);
+            --header-border: #334155;
         }
 
         /* Light Theme Overrides */
@@ -694,8 +693,9 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                 return;
             }
 
-            container.innerHTML = releases.map((rel, index) => {
-                // Formatting Date
+            let htmlString = '';
+            for (let i = 0; i < releases.length; i++) {
+                const rel = releases[i];
                 let formattedDate = rel.updated;
                 try {
                     const dateObj = new Date(rel.updated);
@@ -706,34 +706,27 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                     });
                 } catch(e) {}
 
-                // Escape text content for javascript passing safely
+                // Escape text content for safe javascript passing
                 const safePlainText = rel.plain_text.replace(/`/g, '\\`').replace(/\$/g, '\\$');
 
-                return `
-                    <article class="release-card">
-                        <div class="release-header">
-                            <div class="release-meta">
-                                <h2 class="release-title">` + rel.title + `</h2>
-                                <span class="release-date">` + formattedDate + `</span>
-                            </div>
-                        </div>
-                        <div class="release-content">
-                            ` + rel.content + `
-                        </div>
-                        <div class="release-actions">
-                            <button class="btn btn-twitter" onclick="openTweetModal(` + index + `)">
-                                Tweet Update
-                            </button>
-                            <button class="btn btn-secondary" onclick="copyToClipboard(\`` + safePlainText + `\`)" style="font-size: 0.9rem; padding: 0.5rem 1rem;">
-                                Copy Info
-                            </button>
-                            <a href="` + rel.link + `" target="_blank" class="btn btn-secondary" style="font-size: 0.9rem; padding: 0.5rem 1rem; text-decoration: none;">
-                                View Source
-                            </a>
-                        </div>
-                    </article>
-                `;
-            }).join('');
+                htmlString += '<article class="release-card">' +
+                    '<div class="release-header">' +
+                        '<div class="release-meta">' +
+                            '<h2 class="release-title">' + rel.title + '</h2>' +
+                            '<span class="release-date">' + formattedDate + '</span>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="release-content">' +
+                        rel.content +
+                    '</div>' +
+                    '<div class="release-actions">' +
+                        '<button class="btn btn-twitter" onclick="openTweetModal(' + i + ')">Tweet Update</button>' +
+                        '<button class="btn btn-secondary" onclick="copyToClipboard(\'' + safePlainText.replace(/'/g, "\\'") + '\')" style="font-size: 0.9rem; padding: 0.5rem 1rem;">Copy Info</button>' +
+                        '<a href="' + rel.link + '" target="_blank" class="btn btn-secondary" style="font-size: 0.9rem; padding: 0.5rem 1rem; text-decoration: none;">View Source</a>' +
+                    '</div>' +
+                '</article>';
+            }
+            container.innerHTML = htmlString;
         }
 
         // Tweet Modal Logics
